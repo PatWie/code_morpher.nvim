@@ -4,7 +4,7 @@ return {
   get_context_node = function(_, ts_start)
     local node = utils.findup(ts_start, "function_definition")
     return {
-      action_name = "Enhance function argument annotations",
+      action_name = "Rewrite function argument annotations",
       available = node ~= nil
     }
   end,

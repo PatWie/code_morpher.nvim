@@ -5,6 +5,7 @@ from botocore.exceptions import ClientError
 
 client = boto3.client("bedrock-runtime", region_name="us-east-1")
 model_id = "anthropic.claude-3-haiku-20240307-v1:0"
+# model_id = "anthropic.claude-3-sonnet-20240229-v1:0"
 
 PROMPTS = {}
 PROMPTS[
@@ -15,7 +16,8 @@ PROMPTS[
 PROMPTS[
     "expert_code"
 ] = """Human: Improve the code with concise naming, pep8 docstring. Write it as it would have been written by a professional
-python programmer in the best possible quality.
+python programmer in the best possible quality. Use modern python3 features if possible. Simplify the control flow if possible. And
+reorganize the code if necessary.
     ONLY output the code without explanations. Do not wrap it in any markdown. Just return the code. Do not wrap it in any markdown. Do not wrap it in ``` block.
     """
 PROMPTS[
@@ -92,7 +94,7 @@ PROMPTS[
         \"\"\"
 
     NEVER write anything else besides the docstring block. ONLY generate the docstring,
-    It should include Args, Returns, Raise, Yield, Attributes if necessary. First line must be in imperative mood. Do NOT output anything else after the docstring.
+    It should include Args, Returns, Raise, Yield, Attributes, Notes, Example if necessary. First line must be in imperative mood. Do NOT output anything else after the docstring.
     Update and correct the pre-existing docstring, parametern names or types might have changed. Wrap everything to 88 chars.
     NEVER write back the initial code, JUST the docstring itself.
     """

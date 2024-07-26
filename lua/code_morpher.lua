@@ -20,7 +20,7 @@ local config = {
     FunctionArgs,
     EnhComment,
     FunctionChanger("Enhance variable names", "enhance_variable_names"),
-    FunctionChanger("Improve code", "expert_code")
+    FunctionChanger("Improve function code", "expert_code")
   },
   picker_opts = require("telescope.themes").get_dropdown {}
 
@@ -34,16 +34,10 @@ M.setup = function(args)
   M.config = vim.tbl_deep_extend("force", M.config, args or {})
 end
 
-M.py_func_docstring = function()
+M.create_py_docstring = function()
   local ctx = Context:create()
   local cursor_node = ctx:cursor_node()
   FunctionDocString:run(cursor_node, ctx)
-end
-
-M.py_class_docstring = function()
-  local ctx = Context:create()
-  local cursor_node = ctx:cursor_node()
-  ClassDocString:run(cursor_node, ctx)
 end
 
 M.pick_action = function()
