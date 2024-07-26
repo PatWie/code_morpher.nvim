@@ -2,6 +2,8 @@ local Context = require("code_morpher.buf_ctx")
 local FunctionDocString = require("code_morpher.morpher.py_func_docstring")
 local ClassDocString = require("code_morpher.morpher.py_class_docstring")
 local FunctionArgs = require("code_morpher.morpher.py_func_args")
+local EnhComment = require("code_morpher.morpher.py_comment")
+local FunctionChanger = require("code_morpher.morpher.py_func_enhance")
 
 local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
@@ -16,6 +18,9 @@ local config = {
     FunctionDocString,
     ClassDocString,
     FunctionArgs,
+    EnhComment,
+    FunctionChanger("Enhance variable names", "enhance_variable_names"),
+    FunctionChanger("Improve code", "expert_code")
   },
   picker_opts = require("telescope.themes").get_dropdown {}
 

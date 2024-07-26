@@ -6,8 +6,26 @@ from botocore.exceptions import ClientError
 client = boto3.client("bedrock-runtime", region_name="us-east-1")
 model_id = "anthropic.claude-3-haiku-20240307-v1:0"
 
-PROMPTS = {
-    "enhance_annotations": """Human: Enhance the function parameters by updating or adding python3 type annotations
+PROMPTS = {}
+PROMPTS[
+    "enhance_comment"
+] = """Human: Improve the comment by better grammer, fixing typos and concise expression.
+    ONLY output the comment without explanations. Do not wrap it in any markdown. Just return the comment. Keep the start "#" as it is a comment.
+    """
+PROMPTS[
+    "expert_code"
+] = """Human: Improve the code with concise naming, pep8 docstring. Write it as it would have been written by a professional
+python programmer in the best possible quality.
+    ONLY output the code without explanations. Do not wrap it in any markdown. Just return the code. Do not wrap it in any markdown. Do not wrap it in ``` block.
+    """
+PROMPTS[
+    "enhance_variable_names"
+] = """Human: Enhance all necessary variable names by a more concise one. Just output the new code with consistent and better variable names.
+    ONLY output the code without explanations. Adapt comments if necessary. Do not delete them. Do not change logic. Do not wrap it in any markdown. Just return the code.
+    """
+PROMPTS[
+    "enhance_annotations"
+] = """Human: Enhance the function parameters by updating or adding python3 type annotations
 
 for
     def fetch_smalltable_rows( table_handle, keys,
@@ -24,9 +42,13 @@ a version with annotations might look like
 
 
     Use the correct type by understand the function body. Do not use "Any" if you can derive it from the function body.
+    If there are pre-existing default values, keep them as they are oif they make sense.
+    Remember, class methods start with "self" as first arguments without an annotation. Keep pre-existing "self" args.
     ONLY output the parameters comma-separated, without function name and parenthese
-    """,
-    "enhance_func_docstring": """Human: Write a google style docstring for a given function. Here is an example
+    """
+PROMPTS[
+    "enhance_func_docstring"
+] = """Human: Write a google style docstring for a given function. Here is an example
     for
 
     def fetch_smalltable_rows(
@@ -73,36 +95,38 @@ a version with annotations might look like
     It should include Args, Returns, Raise, Yield, Attributes if necessary. First line must be in imperative mood. Do NOT output anything else after the docstring.
     Update and correct the pre-existing docstring, parametern names or types might have changed. Wrap everything to 88 chars.
     NEVER write back the initial code, JUST the docstring itself.
-    """,
-    "enhance_class_docstring": """Human: Write a google style docstring for a given class. Here is an example
+    """
+PROMPTS[
+    "enhance_class_docstring"
+] = """Human: Write a google style docstring for a given class not a function. JUST the class. Here is an example
     for
 
     class ExampleClass(object):
 
 
     this is how it can look like
-    \"\"\"The summary line for a class docstring should fit on one line.
+    class ExampleClass(object):
+        \"\"\"The summary line for a class docstring should fit on one line.
 
-    If the class has public attributes, they may be documented here
-    in an ``Attributes`` section and follow the same formatting as a
-    function's ``Args`` section. Alternatively, attributes may be documented
-    inline with the attribute's declaration (see __init__ method below).
+        If the class has public attributes, they may be documented here
+        in an ``Attributes`` section and follow the same formatting as a
+        function's ``Args`` section. Alternatively, attributes may be documented
+        inline with the attribute's declaration (see __init__ method below).
 
-    Properties created with the ``@property`` decorator should be documented
-    in the property's getter method.
+        Properties created with the ``@property`` decorator should be documented
+        in the property's getter method.
 
-    Attributes:
-        attr1 (str): Description of `attr1`.
-        attr2 (:obj:`int`, optional): Description of `attr2`.
+        Attributes:
+            attr1 (str): Description of `attr1`.
+            attr2 (:obj:`int`, optional): Description of `attr2`.
 
-    \"\"\"
+        \"\"\"
 
-    NEVER write anything else besides the docstring block. ONLY generate the docstring,
-    It should include Args, Returns, Raise, Yield, Attributes if necessary. First line must be in imperative mood. Do NOT output anything else after the docstring.
-    Update and correct the pre-existing docstring, parametern names or types might have changed. Wrap everything to 88 chars.
+    NEVER write anything else besides the docstring block. ONLY generate the docstring.
+    It should include a summary of what th class is doing and attributes if necessary. First line must be in imperative mood. Do NOT output anything else after the docstring.
+    Update and correct the pre-existing docstring. Wrap everything to 88 chars.
     NEVER write back the initial code, JUST the docstring itself.
-    """,
-}
+    """
 
 
 def generate_llm_response(prompt: str, data: str):
