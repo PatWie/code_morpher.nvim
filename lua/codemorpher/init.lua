@@ -4,14 +4,46 @@ local config = require("codemorpher.config")
 
 local M = {}
 
--- Holds all the available actions
-local available_actions = {
-  require("codemorpher.actions.git_commit"),
-  require("codemorpher.actions.add_comment"),
-}
--- Add the rename actions from the factory
-for _, action in ipairs(require("codemorpher.actions.rename")) do
-  table.insert(available_actions, action)
+local uv = vim.loop
+local available_actions = {}
+
+-- Get the absolute directory of the currently executing file
+local current_file = debug.getinfo(1, "S").source:sub(2)
+local actions_dir = vim.fn.fnamemodify(current_file, ":h") .. "/actions"
+
+-- Helper to scan files in the actions directory
+local function get_action_modules()
+  local modules = {}
+  local handle = uv.fs_scandir(actions_dir)
+  if handle then
+    while true do
+      local name, type = uv.fs_scandir_next(handle)
+      if not name then break end
+      if type == "file" and name:sub(-4) == ".lua" then
+        local mod_name = name:sub(1, -5) -- strip ".lua"
+        table.insert(modules, "codemorpher.actions." .. mod_name)
+      end
+    end
+  end
+  return modules
+end
+
+-- Load and normalize actions
+for _, module_path in ipairs(get_action_modules()) do
+  local ok, actions = pcall(require, module_path)
+  if ok then
+    if type(actions) == "table" then
+      if #actions > 0 then
+        for _, action in ipairs(actions) do
+          table.insert(available_actions, action)
+        end
+      else
+        table.insert(available_actions, actions)
+      end
+    end
+  else
+    vim.notify("Failed to load module: " .. module_path, vim.log.levels.WARN)
+  end
 end
 
 ---Setup function to allow user configuration.

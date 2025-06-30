@@ -57,12 +57,6 @@ require("codemorpher").setup({
     winblend = 10,
     previewer = false,
   }),
-
-  -- Customize prompts (optional)
-  prompts = {
-    rename_concise = "Your custom rename prompt here...",
-    add_comment = "Your custom comment prompt here...",
-  },
 })
 ```
 

@@ -3,19 +3,8 @@ local config = require("codemorpher.config").options
 
 local M = {}
 
-M.name = "Add Comment (Visual)"
+M.name = "Add Comment above"
 
--- Simple mapping of filetype to comment string
-local comment_strings = {
-  lua = "--",
-  python = "#",
-  javascript = "//",
-  typescript = "//",
-  rust = "//",
-  go = "//",
-  c = "//",
-  cpp = "//",
-}
 
 ---@param ctx CodeMorpher.Context
 function M.is_available(ctx)
@@ -29,16 +18,22 @@ function M.run(ctx)
     return
   end
 
-  local prompt = string.format(config.prompts.add_comment, selection.text)
-  -- vim.notify(prompt, vim.log.levels.INFO)
+  local prompt_template = [[
+Write a concise comment block explaining what the following code does.
+The comment should be suitable to be placed directly above the code.
+Do not include the code itself in your response, only the comment text.
+
+Code:
+    %s
+]]
+
+  local prompt = string.format(prompt_template, selection.text)
 
   core.run_llm_job(prompt, function(lines)
-    local comment_prefix = (comment_strings[ctx.filetype] or "#") .. " "
     local formatted_comment = {}
-    comment_prefix = ""
     for _, line in ipairs(lines) do
       if line ~= "" then
-        table.insert(formatted_comment, comment_prefix .. line)
+        table.insert(formatted_comment, line)
       end
     end
 

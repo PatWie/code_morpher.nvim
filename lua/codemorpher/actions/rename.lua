@@ -12,6 +12,22 @@ local function get_context_node(start_node)
   return start_node:parent() or start_node
 end
 
+
+PROMPT_TEMPLATES = {
+  rename_shorter = [[
+Given the following code context, suggest exactly 10 shorter, alternative names for the variable or function `%s`.
+The names should be valid for the language and maintain clarity.
+Output each suggestion on a new line, with no other text.
+
+Context: %s ]],
+  rename_concise = [[
+Given the following code context, suggest exactly 10 more descriptive and concise names for the variable or function `%s`.
+The names should be idiomatic for the language.
+Output each suggestion on a new line, with no other text.
+
+Context: %s ]]
+}
+
 -- Factory function to create rename actions
 local function create_rename_action(name, prompt_key)
   local action = {}
@@ -38,7 +54,7 @@ local function create_rename_action(name, prompt_key)
     local context_node = get_context_node(node)
     local context_text = core.get_node_text(context_node, ctx.bufnr)
 
-    local prompt = string.format(config.prompts[prompt_key], var_name, context_text)
+    local prompt = string.format(PROMPT_TEMPLATES[prompt_key], var_name, context_text)
 
     core.run_llm_job(prompt, function(lines)
       core.show_picker(lines, function(selection)
@@ -51,6 +67,6 @@ local function create_rename_action(name, prompt_key)
 end
 
 return {
-  -- create_rename_action("Suggest Shorter Name", "rename_shorter"),
   create_rename_action("Improve Name", "rename_concise"),
+  create_rename_action("Shorten Name", "rename_shorter"),
 }

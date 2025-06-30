@@ -45,9 +45,9 @@ function M.run(ctx)
     args = {
       "-lc",
       string.format(
-      -- 'staged --create-prompt %q | llm-cli --stream --',
-        'staged --create-prompt %q | q chat --no-interactive',
-        commit_msg_path
+        'staged --create-prompt %q | %s',
+        commit_msg_path,
+        config.llm_command
       )
     },
     on_stdout = function(_, data)
