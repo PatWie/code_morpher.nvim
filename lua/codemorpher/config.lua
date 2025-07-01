@@ -6,7 +6,9 @@ M.options = {
   -- and print the result to stdout.
   -- Example: "q chat --no-interactive"
   -- Example: "ollama run codellama:7b"
-  llm_command = "q chat --no-interactive",
+  -- llm_command = "q chat --no-interactive",
+  llm_command = "llm-cli --stream --",
+  -- llm_command = "q chat",
 
   -- Telescope theme for the pickers
   picker_opts = require("telescope.themes").get_dropdown({

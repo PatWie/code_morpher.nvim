@@ -63,6 +63,32 @@ function M.get_node_text(node, bufnr)
   return vim.treesitter.get_node_text(node, bufnr)
 end
 
+--- Gets text from a buffer in a limited window around a given node.
+--- @param node table The Treesitter node to center the context on.
+--- @param bufnr integer The buffer number.
+--- @param lines_around integer The number of lines to include above and below the node.
+--- @return string The extracted context text.
+function M.get_limited_context_around_node(node, bufnr, lines_around)
+  -- Get the node's 0-indexed vertical range.
+  local node_start_row, _, node_end_row, _ = node:range()
+
+  -- Calculate the desired start and end rows for the context.
+  local context_start_row = node_start_row - lines_around
+  local context_end_row = node_end_row + lines_around
+
+  -- Clamp the values to the buffer's boundaries to prevent errors.
+  context_start_row = math.max(0, context_start_row)
+
+  local total_lines = vim.api.nvim_buf_line_count(bufnr)
+  -- The end index for nvim_buf_get_lines is exclusive.
+  local exclusive_end_row = math.min(total_lines, context_end_row + 1)
+
+  -- Fetch the lines from the buffer within the clamped range.
+  local lines = vim.api.nvim_buf_get_lines(bufnr, context_start_row, exclusive_end_row, false)
+
+  return table.concat(lines, "\n")
+end
+
 ---Runs the configured LLM command with a given prompt.
 ---@param prompt string The prompt to send to the LLM.
 ---@param on_result fun(result: string[]) Called with the LLM output lines when the job completes.
@@ -71,10 +97,12 @@ function M.run_llm_job(prompt, on_result)
 
   local config = require("codemorpher.config").options
   local output_lines = {}
+  -- vim.notify(prompt, vim.log.levels.INFO, { title = "CodeMorpher" })
 
   -- IMPORTANT: Escape the prompt to be safely passed to a shell command.
   local escaped_prompt = vim.fn.shellescape(prompt)
   local full_command = string.format("echo %s | %s", escaped_prompt, config.llm_command)
+  -- local full_command = string.format("%s %s", config.llm_command, escaped_prompt)
 
 
   Job:new({
@@ -84,7 +112,7 @@ function M.run_llm_job(prompt, on_result)
     args = { "-lc", full_command },
     on_stdout = function(_, data)
       -- Remove all ANSI escape codes
-      local clean_data = data:gsub("\27%[[%d;]*m", "")
+      local clean_data = data:gsub("\27%[[%d;]*m", ""):gsub("^%s*>%s*", "")
       if clean_data then
         table.insert(output_lines, clean_data)
       end
